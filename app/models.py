@@ -14,13 +14,18 @@ class User(Base):
     email: Mapped[str] = mapped_column(unique=True)
     hashed_password: Mapped[str] = mapped_column(String(128))
     username: Mapped[str] = mapped_column(String(32), unique=True)
-    first_name: Mapped[str] = mapped_column(String(32))
-    last_name: Mapped[str] = mapped_column(String(32))
-    birthdate: Mapped[Optional[date]] = mapped_column(Date)
+    first_name: Mapped[str] = mapped_column(String(32), nullable=True)
+    last_name: Mapped[str] = mapped_column(String(32), nullable=True)
+    birthdate: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     joined_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     is_active: Mapped[bool] = mapped_column(default=True)
     is_staff: Mapped[bool] = mapped_column(default=False)
     is_superuser: Mapped[bool] = mapped_column(default=False)
+
+    owned_games: Mapped[List["Game"]] = relationship(back_populates="owner")
+    submissions: Mapped[List["Submission"]] = relationship(back_populates="owner")
+    participations: Mapped[List["Participation"]] = relationship(back_populates="user")
+
 
 
 class Topic(Base):
@@ -28,6 +33,8 @@ class Topic(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
+
+    games: Mapped[List["Game"]] = relationship(back_populates="topic")
 
 
 class Game(Base):
@@ -44,6 +51,8 @@ class Game(Base):
 
     owner: Mapped["User"] = relationship("User", back_populates="owned_games")
     questions: Mapped[List["GameQuestion"]] = relationship(back_populates="game")
+    topic: Mapped["Topic"] = relationship("Topic", back_populates="games")
+    participations: Mapped[List["Participation"]] = relationship(back_populates="game")
 
 
 class GameQuestion(Base):
@@ -70,6 +79,7 @@ class Question(Base):
 
     option_ids: Mapped[List["Option"]] = relationship(back_populates="question")
     games: Mapped[List["GameQuestion"]] = relationship(back_populates="question")
+    submissions: Mapped[List["Submission"]] = relationship(back_populates="question")
 
 
 """
@@ -92,6 +102,9 @@ class Participation(Base):
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     gained_score: Mapped[int] = mapped_column(Integer, default=0)
     registered_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+
+    user: Mapped["User"] = relationship("User", back_populates="participations")
+    game: Mapped["Game"] = relationship("Game", back_populates="participations")
 
 
 class Option(Base):
