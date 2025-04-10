@@ -64,3 +64,8 @@ async def login(
         "refresh_token": refresh_token,
         "token_type": "Bearer"
     }
+
+
+@router.get("/test")
+async def test():
+    return {"Hello": "World"}
