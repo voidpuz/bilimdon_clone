@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 
-class QuestionListResponse(BaseModel):
+class QuestionResponse(BaseModel):
     id: int
     owner_id: int
     title: str
@@ -28,3 +28,7 @@ class QuestionListResponse(BaseModel):
     }
 
 
+class QuestionCreate(BaseModel):
+    title: str
+    description: str | None = None
+    topic_id: int
