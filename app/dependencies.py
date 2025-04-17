@@ -66,5 +66,18 @@ def get_admin_user(
 
     return user
 
+
+def get_staff_user(
+    user: User = Depends(get_current_user)
+):
+    if not user.is_staff:
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have staff privileges."
+        )
+
+    return user
+
 current_user_dep = Annotated[User, Depends(get_current_user)]
 admin_user_dep = Annotated[User, Depends(get_admin_user)]
+staff_user_dep = Annotated[User, Depends(get_staff_user)]
