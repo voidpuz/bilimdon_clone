@@ -3,8 +3,8 @@ from fastapi import APIRouter, HTTPException
 from datetime import timezone, datetime, timedelta
 
 from app.dependencies import db_dep, current_user_dep, admin_user_dep
-from app.models import Game
-from app.schemas import GameCreate, GameResponse, GameUpdate
+from app.models import Game, Question, GameQuestion
+from app.schemas import GameCreate, GameResponse, GameUpdate, QuestionResponse, GameSelectQuestion
 
 
 router = APIRouter(prefix="/games", tags=["games"])
@@ -127,3 +127,59 @@ async def delete_game(
         "game_id": id,
         "message": "Game deleted."
     }
+
+
+@router.get("/{id}/questions", response_model=list[QuestionResponse])
+async def game_questions(
+    db: db_dep,
+    current_user: current_user_dep,
+    id: int
+):
+    db_game = db.query(Game).filter(Game.id == id).first()
+
+    if not db_game:
+        raise HTTPException(
+            status_code=404,
+            detail="Game not found."
+        )
+    
+    db_questions = db.query(GameQuestion).filter(GameQuestion.game_id == id).all()
+
+    if db_questions:
+        return [db.query(Question).filter(Question.id == question.question_id).first() for question in db_questions]
+
+    return []
+
+
+@router.post("/{id}/select-question/", response_model=QuestionResponse)
+async def select_question(
+    db: db_dep,
+    current_user: current_user_dep,
+    request: GameSelectQuestion
+):
+    db_question = db.query(Question).filter(Question.id == request.question_id).first()
+
+    if not db_question:
+        raise HTTPException(
+            status_code=404,
+            detail="Question not found."
+        )
+    
+    db_game = db.query(Game).filter(Game.id == request.game_id).first()
+
+    if not db_game:
+        raise HTTPException(
+            status_code=404,
+            detail="Game not found."
+        )
+    
+    db_game_question = GameQuestion(
+        game_id=db_game.id,
+        question_id=db_question.id
+    )
+
+    db.add(db_game_question)
+    db.commit()
+    db.refresh(db_game_question)
+
+    return db_question

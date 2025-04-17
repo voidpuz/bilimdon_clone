@@ -38,3 +38,8 @@ class GameUpdate(BaseModel):
     start_time: datetime | None = None
     end_time: datetime | None = None
     topic_id: int | None = None
+
+
+class GameSelectQuestion(BaseModel):
+    question_id: int
+    game_id: int
