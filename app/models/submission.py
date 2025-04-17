@@ -13,6 +13,7 @@ class Submission(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
+    game_id: Mapped[int] = mapped_column(Integer, ForeignKey("games.id"))
     question_id: Mapped[int] = mapped_column(Integer, ForeignKey("questions.id"))
     option_id: Mapped[int] = mapped_column(Integer, ForeignKey("options.id"))
     is_correct: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -21,3 +22,4 @@ class Submission(Base):
     owner = relationship("User", back_populates="submissions")
     question = relationship("Question", back_populates="submissions")
     option = relationship("Option", back_populates="submissions")
+    game = relationship("Game", back_populates="submissions")

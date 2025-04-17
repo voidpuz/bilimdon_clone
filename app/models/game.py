@@ -22,6 +22,7 @@ class Game(Base):
     owner: Mapped["User"] = relationship("User", back_populates="owned_games")
     questions: Mapped[List["GameQuestion"]] = relationship(back_populates="game")
     topic: Mapped["Topic"] = relationship("Topic", back_populates="games")
+    submissions: Mapped["Submission"] = relationship("Submission", back_populates="game")
     participations: Mapped[List["Participation"]] = relationship(back_populates="game")
 
 
