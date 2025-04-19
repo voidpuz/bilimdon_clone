@@ -29,3 +29,6 @@ class User(Base):
 
     async def __admin_repr__(self, request: Request):
         return f"{self.last_name} {self.first_name}"
+    
+    async def __admin_select2_repr__(self, request: Request) -> str:
+        return f'<span><b>{self.first_name} {self.last_name}</b></span>'
