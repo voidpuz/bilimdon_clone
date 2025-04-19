@@ -3,11 +3,13 @@ from starlette_admin.contrib.sqla import Admin
 from app.database import engine
 from app.models import User, Game, Question, Participation, Submission, Option, Topic
 from app.admin.views import UserView, GameView, QuestionView, ParticipationView, SubmissionView, OptionView, TopicView
+from app.admin.auth import JSONAuthProvider
 
 
 admin = Admin(
     engine,
-    title="Bilimdon Admin"
+    title="Bilimdon Admin",
+    auth_provider=JSONAuthProvider(login_path="/login", logout_path="/logout"),
 )
 
 

@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware import
 from fastapi.openapi.utils import get_openapi
 from starlette_admin.contrib.sqla import ModelView, Admin
 
@@ -18,7 +19,9 @@ from app.models import User
 from app.admin.settings import admin
 
 
-app = FastAPI()
+app = FastAPI(
+    middleware=
+)
 
 
 
