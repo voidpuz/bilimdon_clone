@@ -87,6 +87,3 @@ async def delete_question(id: int, db: db_dep):
     }
 
 
-# @router.get("{id}/options/", response_model=QuestionWithOptionsResponse)
-# async def get_question_with_options(id: int, db: db_dep):
-#     pass
