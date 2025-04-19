@@ -1,4 +1,6 @@
 from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from typing import Optional
 
 class AuthRegistration(BaseModel):
     email: EmailStr
@@ -14,3 +16,4 @@ class AuthRegistrationResponse(BaseModel):
 class AuthLogin(BaseModel):
     email: str
     password: str
+

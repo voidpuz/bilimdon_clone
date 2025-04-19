@@ -10,6 +10,8 @@ from app.routers.question import router as question_router
 from app.routers.option import router as option_router
 from app.routers.topic import router as topic_router
 from app.routers.game import router as game_router
+from app.routers.user import router as user_router
+from app.dependencies import get_admin_user, current_user_dep
 
 
 app = FastAPI()
@@ -25,3 +27,4 @@ app.include_router(question_router)
 app.include_router(option_router)
 app.include_router(topic_router)
 app.include_router(game_router)
+app.include_router(user_router)
