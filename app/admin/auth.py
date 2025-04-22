@@ -3,9 +3,13 @@ from starlette_admin.auth import AdminConfig, AdminUser, AuthProvider
 from starlette_admin.exceptions import FormValidationError, LoginFailed
 from sqlalchemy.orm import Session
 
+from datetime import timedelta, datetime, timezone
+from jose import jwt
+from typing import Optional
+
 from app.dependencies import get_db
 from app.models import User
-from app.utils import verify_password
+from app.utils import verify_password, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 
 
 
@@ -19,48 +23,59 @@ class JSONAuthProvider(AuthProvider):
         response: Response,
     ):
         db: Session = next(get_db())
-        current_requested_user = db.query(User).filter(User.email == email).first()
+        user = db.query(User).filter(User.email == email).first()
 
-        if not current_requested_user:
+        if not user:
             raise LoginFailed("User not found.")
 
-        if current_requested_user and current_requested_user.is_superuser != True:
+        if user and user.is_superuser != True:
             raise LoginFailed("User is not admin.")
         
-        if not verify_password(password, current_requested_user.hashed_password):
+        if not verify_password(password, user.hashed_password):
             raise LoginFailed("Invalid password.")
+        
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        token_data = {
+            "sub": user.email,
+            "exp": datetime.now(timezone.utc) + access_token_expires,
+        }
+        access_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            secure=True,
+            samesite="lax",
+        )
 
         return response
 
 
-    # async def is_authenticated(self, request) -> bool:
-    #     auth_header = request.headers.get("Authorization")
-    #     is_bearer = auth_header.startswith("Bearer ") if auth_header else False
-    #     token = auth_header.split(" ")[1] if auth_header else ""
+    async def is_authenticated(self, request: Request) -> Optional[User]:
+        token = request.cookies.get("access_token")
 
-    #     if not auth_header and is_bearer:
-    #         raise HTTPException(
-    #             status_code=401,
-    #             detail="You are not authenticated."
-    #         )
+        if not token:
+            return None
 
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            email: str = payload.get("sub")
+            if email is None:
+                return None
 
-    #     try:
-    #         decoded_jwt = jwt.decode(
-    #             token,
-    #             SECRET_KEY,
-    #             ALGORITHM
-    #         )
-    #         print(decoded_jwt)
-    #         email = decoded_jwt.get("email")
-    #         password = decoded_jwt.get("password")
+            db: Session = next(get_db())
+            user = db.query(User).filter(User.email == email).first()
 
-    #         db_user = db.query(User).filter(User.email == email).first()
+            if user is None or not user.is_superuser:
+                return None
 
-    #     except:
-    #         raise HTTPException(
-    #             status_code=401,
-    #             detail="Invalid token."
-    #         )
+            return user
 
-    #     return db_user
+        except jwt.PyJWTError:
+            return None
+
+    async def logout(self, request: Request, response: Response) -> Response:
+        response.delete_cookie("access_token")
+        return response

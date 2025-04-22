@@ -1,11 +1,5 @@
 from fastapi import FastAPI
-from fastapi.middleware import
 from fastapi.openapi.utils import get_openapi
-from starlette_admin.contrib.sqla import ModelView, Admin
-
-from typing import Union
-import time
-from datetime import datetime
 
 from app.routers.auth import router as auth_router
 from app.routers.question import router as question_router
@@ -14,14 +8,10 @@ from app.routers.topic import router as topic_router
 from app.routers.game import router as game_router
 from app.routers.participation import router as p_router
 from app.routers.submission import router as sub_router
-from app.database import engine
-from app.models import User
 from app.admin.settings import admin
 
 
-app = FastAPI(
-    middleware=
-)
+app = FastAPI()
 
 
 
